@@ -28,10 +28,10 @@ class MusicAdapter : ListAdapter<MusicModel, MusicAdapter.MusicViewHolder>(Music
         RecyclerView.ViewHolder(binding.root) {
         fun bind(music: MusicModel) {
             with(binding) {
-
                 Glide.with(itemView).load(music.album).into(ivImage)
 
                 tvMusicName.text = music.title
+                tvArtistName.text = if (music.artist == "<unknown>") "Unknown" else music.artist
                 tvMusicDuration.text = formatDuration(music.duration)
 
                 root.setOnClickListener {

@@ -71,16 +71,26 @@ class MusicFragment : Fragment() {
     }
 
     private fun initViewModel() {
-        viewModel.musicList.observe(viewLifecycleOwner) { newMusicList ->
-            if (newMusicList.isNotEmpty()) {
-                musicList.addAll(newMusicList)
-                musicAdapter.submitList(newMusicList)
-                binding.progressBar.visibility = View.GONE
-                binding.progressBarBg.visibility = View.GONE
-                binding.rvMusic.visibility = View.VISIBLE
+        with(binding) {
+            viewModel.musicList.observe(viewLifecycleOwner) { newMusicList ->
+                if (newMusicList.isNotEmpty()) {
+                    musicList.clear()
+                    musicList.addAll(newMusicList)
+                    musicAdapter.submitList(newMusicList)
+                    progressBar.visibility = View.GONE
+                    progressBarBg.visibility = View.GONE
+                    emptyText.visibility = View.GONE
+                    rvMusic.visibility = View.VISIBLE
+                } else {
+                    progressBar.visibility = View.GONE
+                    progressBarBg.visibility = View.GONE
+                    emptyText.visibility = View.VISIBLE
+                    rvMusic.visibility = View.GONE
+                }
             }
         }
     }
+
 
     private fun initRecyclerView() {
         binding.rvMusic.apply {

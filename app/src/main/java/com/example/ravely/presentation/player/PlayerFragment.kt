@@ -1,5 +1,6 @@
 package com.example.ravely.presentation.player
 
+import android.animation.ObjectAnimator
 import android.content.Context
 import android.content.SharedPreferences
 import android.media.MediaPlayer
@@ -10,6 +11,7 @@ import android.view.View
 import android.view.ViewGroup
 import android.view.WindowManager.LayoutParams.FLAG_DRAWS_SYSTEM_BAR_BACKGROUNDS
 import android.widget.SeekBar
+import androidx.core.animation.addListener
 import androidx.core.content.ContextCompat.getColor
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
@@ -20,7 +22,9 @@ import com.example.ravely.databinding.FragmentPlayerBinding
 import com.example.ravely.domain.model.MusicModel
 import com.example.ravely.presentation.SharedViewModel
 import com.example.ravely.utils.formatDuration
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 import org.koin.androidx.viewmodel.ext.android.viewModel
 
@@ -36,6 +40,7 @@ class PlayerFragment : Fragment() {
     private val sharedPreference: SharedPreferences by lazy {
         requireActivity().getSharedPreferences("pref", Context.MODE_PRIVATE)
     }
+    private var textJob: Job? = null
     private var position = 0
 
     override fun onCreateView(
@@ -75,14 +80,35 @@ class PlayerFragment : Fragment() {
         if (musicList.isNotEmpty() && position in musicList.indices) {
             val music = musicList[position]
             with(binding) {
-
                 Glide.with(ivImage.context).load(music.album).into(ivImage)
 
-                tvMusicName.text = music.title
                 tvMusicDuration.text = formatDuration(music.duration)
                 sbMusic.max = music.duration.toInt()
 
+                toggleMusicText(music.title, music.artist)
                 updateSeekBar()
+            }
+        }
+    }
+
+    private fun toggleMusicText(title: String, artist: String) {
+        textJob?.cancel()
+        textJob = lifecycleScope.launch {
+            var showTitle = true
+            while (isActive) {
+                ObjectAnimator.ofFloat(binding.tvMusicName, "alpha", 1f, 0f).apply {
+                    duration = 500
+                    addListener(onEnd = {
+                        binding.tvMusicName.text = if (showTitle) title else if (artist == "<unknown>") "Unknown" else artist
+
+                        ObjectAnimator.ofFloat(binding.tvMusicName, "alpha", 0f, 1f).apply {
+                            duration = 500
+                        }.start()
+                    })
+                }.start()
+
+                showTitle = !showTitle
+                delay(5000)
             }
         }
     }
@@ -182,6 +208,11 @@ class PlayerFragment : Fragment() {
             }
             setOnCompletionListener { musicNext() }
         }
+    }
+
+    override fun onStop() {
+        super.onStop()
+        textJob?.cancel()
     }
 
     override fun onDestroy() {
