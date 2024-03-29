@@ -1,0 +1,13 @@
+<resources>
+
+    <style name="Base.Theme.Ravely" parent="Theme.Material3.DayNight.NoActionBar">
+        <item name="android:statusBarColor">@color/dark</item>
+    </style>
+
+    <style name="Theme.Ravely" parent="Base.Theme.Ravely" />
+
+    <style name="Theme.Player" parent="Base.Theme.Ravely">
+        <item name="android:statusBarColor">@color/gray</item>
+    </style>
+
+</resources>
